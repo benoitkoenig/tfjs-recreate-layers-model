@@ -1,6 +1,6 @@
 {
   "name": "tfjs-recreate-layers-model",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utility function to update the input/output of a LayersModel with tensorflow.js",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/benoitkoenig/tfjs-recreate-layers-model#readme",
   "peerDependencies": {
-    "@tensorflow/tfjs-core": "^4.22.0",
-    "@tensorflow/tfjs-layers": "^4.22.0"
+    "@tensorflow/tfjs-core": "^4.0.0",
+    "@tensorflow/tfjs-layers": "^4.0.0"
   },
   "dependencies": {
     "@tensorflow/tfjs-core": "^4.22.0",
