@@ -2,7 +2,8 @@
   "name": "tfjs-reset-boundary-layers",
   "version": "0.0.0",
   "description": "Utility function to update the input/output of a LayersModel with tensorflow.js",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
     "test": "vitest"
