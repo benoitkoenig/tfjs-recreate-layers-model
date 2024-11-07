@@ -5,7 +5,6 @@ export default {
   input: "./index.ts",
   output: {
     dir: "dist",
-    format: "cjs"
   },
-  plugins: [typescript(), dts()]
+  plugins: [typescript(), dts()],
 };
