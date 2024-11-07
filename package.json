@@ -4,6 +4,7 @@
   "description": "Utility function to update the input/output of a LayersModel with tensorflow.js",
   "main": "index.ts",
   "scripts": {
+    "build": "rollup -c rollup.config.mjs",
     "test": "vitest"
   },
   "repository": {
@@ -24,7 +25,11 @@
     "@tensorflow/tfjs-layers": "^4.22.0"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.1",
     "@tensorflow/tfjs-node": "^4.22.0",
+    "rollup": "^4.24.4",
+    "tslib": "^2.8.1",
+    "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }
 }
