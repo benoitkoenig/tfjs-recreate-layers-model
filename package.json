@@ -1,6 +1,6 @@
 {
   "name": "tfjs-reset-boundary-layers",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Utility function to update the input/output of a LayersModel with tensorflow.js",
   "main": "index.ts",
   "scripts": {
