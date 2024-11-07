@@ -4,7 +4,7 @@ import { LayersModel, layers, SymbolicTensor, model, Sequential } from "@tensorf
 export function recreateLayersModel(originalModel: LayersModel) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
-    throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-reset-boundary-layers/issues");
+    throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues");
   }
 
   const recreatedLayers: layers.Layer[] = [];
