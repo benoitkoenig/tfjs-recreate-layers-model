@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { tidy, zeros } from "@tensorflow/tfjs-core";
+import { ones, Tensor, tensor1d, tensor2d, tidy } from "@tensorflow/tfjs-core";
 import { LayersModel, input, layers, model, SymbolicTensor } from "@tensorflow/tfjs-layers";
 import "@tensorflow/tfjs-node";
 
@@ -19,7 +19,7 @@ function getModelSummary(model: LayersModel) {
 }
 
 describe("Recreate layers model", () => {
-  it("should recreate a simple model made of a single dense layer", () => {
+  it("should recreate a model made of a single dense layer", () => {
     tidy(() => {
       const inputLayer = input({
         shape: [3],
@@ -34,17 +34,34 @@ describe("Recreate layers model", () => {
         outputs: output,
       });
 
+      originalModel.trainableWeights[0].write(tensor2d([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));
+      originalModel.trainableWeights[1].write(tensor1d([10, 20, 30]));
+
       const recreatedModel = recreateLayersModel(originalModel);
 
       expect(getModelSummary(recreatedModel)).toBe(
         getModelSummary(originalModel),
       );
 
-      recreatedModel.predict(
+      const mockInput = recreatedModel.predict(
         recreatedModel.inputs.map(({ shape }) =>
-          zeros(shape.map((s) => s ?? 1)),
+          ones(shape.map((s) => s ?? 1)),
         ),
-      );
+      )
+
+      const originalPrediction = (originalModel.predict(mockInput) as Tensor).arraySync();
+      const recreatedPrediction = (recreatedModel.predict(mockInput) as Tensor).arraySync();
+
+      expect(originalPrediction).toMatchInlineSnapshot(`
+        [
+          [
+            508,
+            623,
+            738,
+          ],
+        ]
+      `);
+      expect(recreatedPrediction).toStrictEqual(originalPrediction);
     });
   });
 });

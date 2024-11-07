@@ -52,6 +52,8 @@ export function recreateLayersModel(originalModel: LayersModel) {
       originalInboundNode.callArgs,
     );
 
+    recreatedLayer.setWeights(originalLayer.getWeights());
+
     recreatedLayers.push(recreatedLayer);
   }
 
