@@ -1,4 +1,5 @@
 import typescript from "@rollup/plugin-typescript";
+import { dts } from "rollup-plugin-dts";
 
 export default {
   input: "./index.ts",
@@ -6,5 +7,5 @@ export default {
     dir: "dist",
     format: "cjs"
   },
-  plugins: [typescript()]
+  plugins: [typescript(), dts()]
 };
