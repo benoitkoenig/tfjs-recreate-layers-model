@@ -1,7 +1,12 @@
 import { serialization } from "@tensorflow/tfjs-core";
-import { LayersModel, layers, SymbolicTensor, model } from "@tensorflow/tfjs-layers";
+import { LayersModel, layers, SymbolicTensor, model, Sequential } from "@tensorflow/tfjs-layers";
 
 export function recreateLayersModel(originalModel: LayersModel) {
+  if (originalModel instanceof Sequential) {
+    // TODO: Add support for sequential models
+    throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-reset-boundary-layers/issues");
+  }
+
   const recreatedLayers: layers.Layer[] = [];
 
   const retrieveRecreatedSymbolicTensor = (
