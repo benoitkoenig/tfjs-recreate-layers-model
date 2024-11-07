@@ -1,0 +1,30 @@
+{
+  "name": "tfjs-reset-boundary-layers",
+  "version": "1.0.0",
+  "description": "Utility function to update the input/output of a LayersModel with tensorflow.js",
+  "main": "index.ts",
+  "scripts": {
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benoitkoenig/tfjs-reset-boundary-layers.git"
+  },
+  "keywords": [
+    "tfjs"
+  ],
+  "author": "Benoît Koenig",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/benoitkoenig/tfjs-reset-boundary-layers/issues"
+  },
+  "homepage": "https://github.com/benoitkoenig/tfjs-reset-boundary-layers#readme",
+  "dependencies": {
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-layers": "^4.22.0"
+  },
+  "devDependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "vitest": "^2.1.4"
+  }
+}
