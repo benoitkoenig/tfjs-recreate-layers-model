@@ -1,5 +1,5 @@
 import { serialization } from "@tensorflow/tfjs-core";
-import { LayersModel, layers, SymbolicTensor, model, Sequential, Shape } from "@tensorflow/tfjs-layers";
+import { LayersModel, layers, SymbolicTensor, model, Sequential } from "@tensorflow/tfjs-layers";
 
 interface LayerRecreationData {
   originalLayer: layers.Layer;
@@ -12,10 +12,20 @@ interface Config {
    * The new inputShapes. Each entry in {@link newInputShapes} matches one entry in `originalModel.inputLayers`.
    * Set this value to null to indicate that the input's shape should remain unchanged and the model's weights should not be reset.
    * Otherwise, set this value to the new shape.
+   * Note that if you set this value to the same shape as previously, the input shape will remain unchanged but that will still reset the weights of layers connected to that input.
    */
   newInputShapes?: ((number | null)[] | null)[];
 }
 
+/**
+ * Creates a new {@link LayersModel} that replicates {@link originalModel}. It is possible to change the input/output shape through the configuration parameter.
+ * The recreated {@link LayersModel} has the same weight as the {@link originalModel}, except fo layers that either:
+ *   - Is directly applied to an input which shape changed
+ *   - Is directly applied to a layer which output shape changed
+ * @param originalModel The {@link LayersModel} to replicate
+ * @param config The {@link Config} for the recreated model to differ from the original model
+ * @returns A {@link LayersModel}
+ */
 export function recreateLayersModel(originalModel: LayersModel, { newInputShapes }: Config) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
