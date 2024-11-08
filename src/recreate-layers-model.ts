@@ -121,7 +121,6 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
       const indexInOutput = originalModel.outputLayers.indexOf(originalLayer);
       
       if (indexInOutput !== -1 && newOutputFiltersOrUnits[indexInOutput] !== null) {
-        console.log(config);
         if (!("units" in config) && !("filters" in config)) {
           throw new Error(`Cannot update output shape of ${originalLayer.name}: no field 'units' nor 'filters' found in the layers config`);
         }
