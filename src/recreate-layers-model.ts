@@ -1,13 +1,32 @@
 import { serialization } from "@tensorflow/tfjs-core";
-import { LayersModel, layers, SymbolicTensor, model, Sequential } from "@tensorflow/tfjs-layers";
+import { LayersModel, layers, SymbolicTensor, model, Sequential, Shape } from "@tensorflow/tfjs-layers";
 
-export function recreateLayersModel(originalModel: LayersModel) {
+interface LayerRecreationData {
+  originalLayer: layers.Layer;
+  recreatedLayer: layers.Layer;
+  requiresWeightsReset: boolean;
+}
+
+interface Config {
+  /**
+   * The new inputShapes. Each entry in {@link newInputShapes} matches one entry in `originalModel.inputLayers`.
+   * Set this value to null to indicate that the input's shape should remain unchanged and the model's weights should not be reset.
+   * Otherwise, set this value to the new shape.
+   */
+  newInputShapes?: ((number | null)[] | null)[];
+}
+
+export function recreateLayersModel(originalModel: LayersModel, { newInputShapes }: Config) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
     throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues");
   }
 
-  const recreatedLayers: layers.Layer[] = [];
+  if (newInputShapes && newInputShapes.length !== originalModel.inputLayers.length) {
+    throw new Error("`newInputShapes` must have the same length as `originalModel.inputLayers`. Set the value to null for inputs that should remain unchanged")
+  }
+
+  const layerRecreationData: LayerRecreationData[] = [];
 
   const retrieveRecreatedSymbolicTensor = (
     originalSymbolicTensor: SymbolicTensor | SymbolicTensor[],
@@ -18,10 +37,7 @@ export function recreateLayersModel(originalModel: LayersModel) {
       ) as SymbolicTensor[];
     }
 
-    const layerIndex = originalModel.layers.indexOf(
-      originalSymbolicTensor.sourceLayer,
-    );
-    const recreatedLayer = recreatedLayers[layerIndex];
+    const { recreatedLayer } = layerRecreationData.find(({ originalLayer }) => originalLayer === originalSymbolicTensor.sourceLayer)!;
 
     if (!Array.isArray(recreatedLayer.output)) {
       return recreatedLayer.output;
@@ -32,9 +48,43 @@ export function recreateLayersModel(originalModel: LayersModel) {
     );
   };
 
+  const shouldResetWeights = (originalLayer: layers.Layer) => {
+    if (!newInputShapes) {
+      return false;
+    }
+
+    const inputTensors = Array.isArray(originalLayer.input) ? originalLayer.input : [originalLayer.input];
+
+    return inputTensors.some((inputTensor) => {
+      const modelInputIndex = originalModel.inputLayers.indexOf(inputTensor.sourceLayer);
+      
+      if (modelInputIndex === -1) {
+        return false;
+      }
+
+      if (newInputShapes[modelInputIndex] === null) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
   for (const originalLayer of originalModel.layers) {
     if (originalModel.inputLayers.includes(originalLayer)) {
-      recreatedLayers.push(layers.inputLayer(originalLayer.getConfig()));
+      let config = originalLayer.getConfig();
+
+      const index = originalModel.inputLayers.indexOf(originalLayer);
+
+      if (newInputShapes?.[index]) {
+        config = { ...config, batchInputShape: newInputShapes[index] };
+      }
+
+      layerRecreationData.push({
+        originalLayer,
+        recreatedLayer: layers.inputLayer(config),
+        requiresWeightsReset: Boolean(newInputShapes?.[index]),
+      });
 
       continue;
     }
@@ -57,9 +107,15 @@ export function recreateLayersModel(originalModel: LayersModel) {
       originalInboundNode.callArgs,
     );
 
-    recreatedLayer.setWeights(originalLayer.getWeights());
+    if (!shouldResetWeights(originalLayer)) {
+      recreatedLayer.setWeights(originalLayer.getWeights());
+    }
 
-    recreatedLayers.push(recreatedLayer);
+    layerRecreationData.push({
+      originalLayer,
+      recreatedLayer,
+      requiresWeightsReset: JSON.stringify(recreatedLayer.outputShape) !== JSON.stringify(originalLayer.outputShape),
+    });
   }
 
   return model({
