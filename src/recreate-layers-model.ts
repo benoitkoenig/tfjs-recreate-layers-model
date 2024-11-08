@@ -14,14 +14,14 @@ interface Config {
    * Otherwise, set this value to the new shape.
    * Note that if you set this value to the same shape as previously, the input shape will remain unchanged but that will still reset the weights of layers connected to that input.
    */
-  newInputShapes?: ((number | null)[] | null)[];
+  newInputShapes?: ((number | null)[] | null)[] | undefined;
   /**
    * The new filters (for conv layers) or units (for dense layers) to apply to the output. Each entry in {@link newOutputFiltersOrUnits} matches one entry in `originalModel.outputLayers`.
    * Set this value to null to indicate that the output's filters/units should remain unchanged and the layer's weights should not be reset.
    * Otherwise, set this value to the new filters/units.
    * Note that if you set this value to the value in the original model, the output shape will remain unchanged but that will still reset the layer's weights.
    */
-  newOutputFiltersOrUnits?: (number | null)[];
+  newOutputFiltersOrUnits?: (number | null)[] | undefined;
 }
 
 /**
