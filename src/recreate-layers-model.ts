@@ -10,11 +10,18 @@ interface LayerRecreationData {
 interface Config {
   /**
    * The new inputShapes. Each entry in {@link newInputShapes} matches one entry in `originalModel.inputLayers`.
-   * Set this value to null to indicate that the input's shape should remain unchanged and the model's weights should not be reset.
+   * Set this value to null to indicate that the input's shape should remain unchanged and the layer's weights should not be reset.
    * Otherwise, set this value to the new shape.
    * Note that if you set this value to the same shape as previously, the input shape will remain unchanged but that will still reset the weights of layers connected to that input.
    */
   newInputShapes?: ((number | null)[] | null)[];
+  /**
+   * The new filters (for conv layers) or units (for dense layers) to apply to the output. Each entry in {@link newOutputFiltersOrUnits} matches one entry in `originalModel.outputLayers`.
+   * Set this value to null to indicate that the output's filters/units should remain unchanged and the layer's weights should not be reset.
+   * Otherwise, set this value to the new filters/units.
+   * Note that if you set this value to the value in the original model, the output shape will remain unchanged but that will still reset the layer's weights.
+   */
+  newOutputFiltersOrUnits?: (number | null)[];
 }
 
 /**
@@ -26,7 +33,7 @@ interface Config {
  * @param config The {@link Config} for the recreated model to differ from the original model
  * @returns A {@link LayersModel}
  */
-export function recreateLayersModel(originalModel: LayersModel, { newInputShapes }: Config) {
+export function recreateLayersModel(originalModel: LayersModel, { newInputShapes, newOutputFiltersOrUnits }: Config) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
     throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues");
@@ -58,7 +65,7 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
     );
   };
 
-  const shouldResetWeights = (originalLayer: layers.Layer) => {
+  const shouldResetWeightsBecauseOfInput = (originalLayer: layers.Layer) => {
     if (!newInputShapes) {
       return false;
     }
@@ -107,17 +114,41 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
 
     const originalInboundNode = originalLayer.inboundNodes[0];
 
+    let config = originalLayer.getConfig();
+    let shouldResetWeightsBecauseOfOuput = false;
+
+    if (newOutputFiltersOrUnits) {
+      const indexInOutput = originalModel.outputLayers.indexOf(originalLayer);
+      
+      if (indexInOutput !== -1 && newOutputFiltersOrUnits[indexInOutput] !== null) {
+        console.log(config);
+        if (!("units" in config) && !("filters" in config)) {
+          throw new Error(`Cannot update output shape of ${originalLayer.name}: no field 'units' nor 'filters' found in the layers config`);
+        }
+
+        if ("units" in config) {
+          config = { ...config, units: newOutputFiltersOrUnits[indexInOutput]!};
+        }
+
+        if ("filters" in config) {
+          config = { ...config, filters: newOutputFiltersOrUnits[indexInOutput]!};
+        }
+
+        shouldResetWeightsBecauseOfOuput = true;
+      }
+    }
+
     const recreatedLayer =
       new (serialization.SerializationMap.getMap().classNameMap[
         originalLayer.getClassName()
-      ][0])(originalLayer.getConfig()) as layers.Layer;
+      ][0])(config) as layers.Layer;
 
     recreatedLayer.apply(
       retrieveRecreatedSymbolicTensor(originalLayer.input),
       originalInboundNode.callArgs,
     );
 
-    if (!shouldResetWeights(originalLayer)) {
+    if (!shouldResetWeightsBecauseOfOuput && !shouldResetWeightsBecauseOfInput(originalLayer)) {
       recreatedLayer.setWeights(originalLayer.getWeights());
     }
 

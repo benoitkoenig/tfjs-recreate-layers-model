@@ -108,4 +108,48 @@ describe("Recreate layers model", () => {
       (recreatedModel.predict(mockInput) as Tensor).arraySync();
     });
   });
+
+  it("should recreate a model and update its output", () => {
+    tidy(() => {
+      const inputLayer = input({
+        shape: [3],
+      });
+
+      const output = layers
+        .dense({ units: 3 })
+        .apply(inputLayer) as SymbolicTensor;
+
+      const originalModel = model({
+        inputs: inputLayer,
+        outputs: output,
+      });
+
+      const recreatedModel = recreateLayersModel(originalModel, {
+        newOutputFiltersOrUnits: [2],
+      });
+
+      expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
+        "__________________________________________________________________________________________
+        Layer (type)                Input Shape               Output shape              Param #   
+        ==========================================================================================
+        input3 (InputLayer)         [[null,3]]                [null,3]                  0         
+        __________________________________________________________________________________________
+        dense_Dense3 (Dense)        [[null,3]]                [null,2]                  8         
+        ==========================================================================================
+        Total params: 8
+        Trainable params: 8
+        Non-trainable params: 0
+        __________________________________________________________________________________________
+        "
+      `);
+
+      expect(recreatedModel.outputs.map(({ shape }) => shape)).toStrictEqual([[null, 2]]);
+
+      const mockInput = recreatedModel.inputs.map(({ shape }) =>
+          ones(shape.map((s) => s ?? 1)),
+        );
+
+      (recreatedModel.predict(mockInput) as Tensor).arraySync();
+    });
+  });
 });
