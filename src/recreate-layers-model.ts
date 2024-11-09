@@ -1,13 +1,10 @@
 import { serialization } from "@tensorflow/tfjs-core";
-import { LayersModel, layers, SymbolicTensor, model, Sequential } from "@tensorflow/tfjs-layers";
+import { LayersModel, layers, model, Sequential } from "@tensorflow/tfjs-layers";
+import { LayerRecreationData } from "./types";
+import retrieveRecreatedSymbolicTensor from "./retrieve-recreated-symbolic-tensor";
+import shouldResetWeightsBecauseOfInput from "./need-reset-weights-due-to-input";
 
-interface LayerRecreationData {
-  originalLayer: layers.Layer;
-  recreatedLayer: layers.Layer;
-  requiresWeightsReset: boolean;
-}
-
-interface Config {
+export interface Config {
   /**
    * The new inputShapes. Each entry in {@link newInputShapes} matches one entry in `originalModel.inputLayers`.
    * Set this value to null to indicate that the input's shape should remain unchanged and the layer's weights should not be reset.
@@ -44,48 +41,6 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
   }
 
   const layerRecreationData: LayerRecreationData[] = [];
-
-  const retrieveRecreatedSymbolicTensor = (
-    originalSymbolicTensor: SymbolicTensor | SymbolicTensor[],
-  ): SymbolicTensor | SymbolicTensor[] => {
-    if (Array.isArray(originalSymbolicTensor)) {
-      return originalSymbolicTensor.map(
-        retrieveRecreatedSymbolicTensor,
-      ) as SymbolicTensor[];
-    }
-
-    const { recreatedLayer } = layerRecreationData.find(({ originalLayer }) => originalLayer === originalSymbolicTensor.sourceLayer)!;
-
-    if (!Array.isArray(recreatedLayer.output)) {
-      return recreatedLayer.output;
-    }
-
-    throw new Error(
-      "Multi-ouput layers is not yet supported in retrieveRecreatedSymbolicTensor",
-    );
-  };
-
-  const shouldResetWeightsBecauseOfInput = (originalLayer: layers.Layer) => {
-    if (!newInputShapes) {
-      return false;
-    }
-
-    const inputTensors = Array.isArray(originalLayer.input) ? originalLayer.input : [originalLayer.input];
-
-    return inputTensors.some((inputTensor) => {
-      const modelInputIndex = originalModel.inputLayers.indexOf(inputTensor.sourceLayer);
-      
-      if (modelInputIndex === -1) {
-        return false;
-      }
-
-      if (newInputShapes[modelInputIndex] === null) {
-        return false;
-      }
-
-      return true;
-    });
-  }
 
   for (const originalLayer of originalModel.layers) {
     const config = { ...originalLayer.getConfig() };
@@ -143,11 +98,11 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
       ][0])(config) as layers.Layer;
 
     recreatedLayer.apply(
-      retrieveRecreatedSymbolicTensor(originalLayer.input),
+      retrieveRecreatedSymbolicTensor(layerRecreationData, originalLayer.input),
       originalInboundNode.callArgs,
     );
 
-    if (!shouldResetWeightsBecauseOfOuput && !shouldResetWeightsBecauseOfInput(originalLayer)) {
+    if (!shouldResetWeightsBecauseOfOuput && !shouldResetWeightsBecauseOfInput(newInputShapes, originalModel, originalLayer)) {
       recreatedLayer.setWeights(originalLayer.getWeights());
     }
 
@@ -159,7 +114,7 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
   }
 
   return model({
-    inputs: retrieveRecreatedSymbolicTensor(originalModel.inputs),
-    outputs: retrieveRecreatedSymbolicTensor(originalModel.outputs),
+    inputs: retrieveRecreatedSymbolicTensor(layerRecreationData, originalModel.inputs),
+    outputs: retrieveRecreatedSymbolicTensor(layerRecreationData, originalModel.outputs),
   });
 }
