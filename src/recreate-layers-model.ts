@@ -91,6 +91,8 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
     if (originalModel.inputLayers.includes(originalLayer)) {
       const config = { ...originalLayer.getConfig() };
 
+      delete config["name"];
+
       const index = originalModel.inputLayers.indexOf(originalLayer);
 
       if (newInputShapes?.[index]) {
@@ -115,6 +117,8 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
     const originalInboundNode = originalLayer.inboundNodes[0];
 
     const config = { ...originalLayer.getConfig() };
+    delete config["name"];
+
     let shouldResetWeightsBecauseOfOuput = false;
 
     if (newOutputFiltersOrUnits) {

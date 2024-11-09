@@ -39,9 +39,20 @@ describe("Recreate layers model", () => {
 
       const recreatedModel = recreateLayersModel(originalModel, {});
 
-      expect(getModelSummary(recreatedModel)).toBe(
-        getModelSummary(originalModel),
-      );
+      expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
+        "__________________________________________________________________________________________
+        Layer (type)                Input Shape               Output shape              Param #   
+        ==========================================================================================
+        input2 (InputLayer)         [[null,3]]                [null,3]                  0         
+        __________________________________________________________________________________________
+        dense_Dense2 (Dense)        [[null,3]]                [null,3]                  12        
+        ==========================================================================================
+        Total params: 12
+        Trainable params: 12
+        Non-trainable params: 0
+        __________________________________________________________________________________________
+        "
+      `);
 
       const mockInput = recreatedModel.predict(
         recreatedModel.inputs.map(({ shape }) =>
@@ -88,9 +99,9 @@ describe("Recreate layers model", () => {
         "__________________________________________________________________________________________
         Layer (type)                Input Shape               Output shape              Param #   
         ==========================================================================================
-        input2 (InputLayer)         [[null,2]]                [null,2]                  0         
+        input4 (InputLayer)         [[null,2]]                [null,2]                  0         
         __________________________________________________________________________________________
-        dense_Dense2 (Dense)        [[null,2]]                [null,3]                  9         
+        dense_Dense4 (Dense)        [[null,2]]                [null,3]                  9         
         ==========================================================================================
         Total params: 9
         Trainable params: 9
@@ -132,9 +143,9 @@ describe("Recreate layers model", () => {
         "__________________________________________________________________________________________
         Layer (type)                Input Shape               Output shape              Param #   
         ==========================================================================================
-        input3 (InputLayer)         [[null,3]]                [null,3]                  0         
+        input6 (InputLayer)         [[null,3]]                [null,3]                  0         
         __________________________________________________________________________________________
-        dense_Dense3 (Dense)        [[null,3]]                [null,2]                  8         
+        dense_Dense6 (Dense)        [[null,3]]                [null,2]                  8         
         ==========================================================================================
         Total params: 8
         Trainable params: 8
