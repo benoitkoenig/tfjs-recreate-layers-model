@@ -19,7 +19,5 @@ export default function retrieveRecreatedSymbolicTensor(
     return recreatedLayer.output;
   }
 
-  throw new Error(
-    "Multi-ouput layers is not yet supported in retrieveRecreatedSymbolicTensor",
-  );
+  return recreatedLayer.output[originalSymbolicTensor.outputTensorIndex!];
 }
