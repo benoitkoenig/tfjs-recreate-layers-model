@@ -4,6 +4,7 @@ import {
   layers,
   model,
   Sequential,
+  Shape,
 } from "@tensorflow/tfjs-layers";
 import { LayerRecreationData } from "./types";
 import retrieveReplicatedSymbolicTensor from "./retrieve-replicated-symbolic-tensor";
@@ -12,18 +13,18 @@ import shouldResetWeightsBecauseOfInput from "./need-reset-weights-due-to-input"
 export interface Config {
   /**
    * The new inputShapes. Each entry in {@link newInputShapes} matches one entry in `originalModel.inputLayers`.
-   * Set this value to null to indicate that the input's shape should remain unchanged and the layer's weights should not be reset.
+   * Set this value to "preserve" to indicate that the input's shape should remain unchanged and the layer's weights should not be reset.
    * Otherwise, set this value to the new shape.
    * Note that if you set this value to the same shape as previously, the input shape will remain unchanged but that will still reset the weights of layers connected to that input.
    */
-  newInputShapes?: (number[] | null)[] | undefined;
+  newInputShapes?: (Shape | "preserve")[] | undefined;
   /**
    * The new filters (for conv layers) or units (for dense layers) to apply to the output. Each entry in {@link newOutputFiltersOrUnits} matches one entry in `originalModel.outputLayers`.
    * Set this value to null to indicate that the output's filters/units should remain unchanged and the layer's weights should not be reset.
    * Otherwise, set this value to the new filters/units.
    * Note that if you set this value to the value in the original model, the output shape will remain unchanged but that will still reset the layer's weights.
    */
-  newOutputFiltersOrUnits?: (number | null)[] | undefined;
+  newOutputFiltersOrUnits?: Shape | undefined;
 }
 
 /**
@@ -64,7 +65,7 @@ export function replicateLayersModel(
     if (originalModel.inputLayers.includes(originalLayer)) {
       const index = originalModel.inputLayers.indexOf(originalLayer);
 
-      if (newInputShapes?.[index]) {
+      if (newInputShapes && newInputShapes[index] !== "preserve") {
         delete config["batchInputShape"];
         config["inputShape"] = newInputShapes[index];
       }
