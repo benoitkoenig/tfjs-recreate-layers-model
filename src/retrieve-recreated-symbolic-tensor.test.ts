@@ -47,11 +47,11 @@ describe("Retrieve recreated symbolic tensor", () => {
   it("should return the recreated tensor corresponding to an original tensor", () => {
     tidy(() => {
       const originalLayer = layers.inputLayer({
-        batchInputShape: [3],
+        inputShape: [3],
       });
 
       const recreatedLayer = layers.inputLayer({
-        batchInputShape: [3],
+        inputShape: [3],
       });
 
       const layersRecreationData: LayerRecreationData[] = [
@@ -74,11 +74,11 @@ describe("Retrieve recreated symbolic tensor", () => {
   it("should work on a multi-output layer", () => {
     tidy(() => {
       const originalInputLayer = layers.inputLayer({
-        batchInputShape: [4],
+        inputShape: [4],
       });
 
       const recreatedInputLayer = layers.inputLayer({
-        batchInputShape: [4],
+        inputShape: [4],
       });
 
       const originalLayer = new SplitLayer({

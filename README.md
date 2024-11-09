@@ -28,7 +28,7 @@ const model = tf.model({
 // Train the model here
 
 const recreatedModel = recreateLayersModel(model, {
-  newInputShapes: [[null, 2]],
+  newInputShapes: [[2]],
   newOutputFiltersOrUnits: [5],
 });
 

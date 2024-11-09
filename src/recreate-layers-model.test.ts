@@ -90,7 +90,7 @@ describe("Recreate layers model", () => {
       });
 
       const recreatedModel = recreateLayersModel(originalModel, {
-        newInputShapes: [[null, 2]],
+        newInputShapes: [[2]],
       });
 
       expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
