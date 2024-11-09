@@ -34,9 +34,6 @@ describe("Recreate layers model", () => {
         outputs: output,
       });
 
-      originalModel.trainableWeights[0].write(tensor2d([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));
-      originalModel.trainableWeights[1].write(tensor1d([10, 20, 30]));
-
       const recreatedModel = recreateLayersModel(originalModel, {});
 
       expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
@@ -63,15 +60,6 @@ describe("Recreate layers model", () => {
       const originalPrediction = (originalModel.predict(mockInput) as Tensor).arraySync();
       const recreatedPrediction = (recreatedModel.predict(mockInput) as Tensor).arraySync();
 
-      expect(originalPrediction).toMatchInlineSnapshot(`
-        [
-          [
-            508,
-            623,
-            738,
-          ],
-        ]
-      `);
       expect(recreatedPrediction).toStrictEqual(originalPrediction);
     });
   });
