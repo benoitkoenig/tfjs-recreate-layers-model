@@ -6,12 +6,14 @@ export default function retrieveRecreatedSymbolicTensor(
   originalSymbolicTensor: SymbolicTensor | SymbolicTensor[],
 ): SymbolicTensor | SymbolicTensor[] {
   if (Array.isArray(originalSymbolicTensor)) {
-    return originalSymbolicTensor.map((t) => 
+    return originalSymbolicTensor.map((t) =>
       retrieveRecreatedSymbolicTensor(layerRecreationData, t),
     ) as SymbolicTensor[];
   }
 
-  const { recreatedLayer } = layerRecreationData.find(({ originalLayer }) => originalLayer === originalSymbolicTensor.sourceLayer)!;
+  const { recreatedLayer } = layerRecreationData.find(
+    ({ originalLayer }) => originalLayer === originalSymbolicTensor.sourceLayer,
+  )!;
 
   if (!Array.isArray(recreatedLayer.output)) {
     return recreatedLayer.output;
@@ -20,4 +22,4 @@ export default function retrieveRecreatedSymbolicTensor(
   throw new Error(
     "Multi-ouput layers is not yet supported in retrieveRecreatedSymbolicTensor",
   );
-};
+}

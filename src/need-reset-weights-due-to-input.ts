@@ -9,10 +9,14 @@ export default function shouldResetWeightsBecauseOfInput(
   if (!newInputShapes) {
     return false;
   }
-  const inputTensors = Array.isArray(originalLayer.input) ? originalLayer.input : [originalLayer.input];
+  const inputTensors = Array.isArray(originalLayer.input)
+    ? originalLayer.input
+    : [originalLayer.input];
   return inputTensors.some((inputTensor) => {
-    const modelInputIndex = originalModel.inputLayers.indexOf(inputTensor.sourceLayer);
-    
+    const modelInputIndex = originalModel.inputLayers.indexOf(
+      inputTensor.sourceLayer,
+    );
+
     if (modelInputIndex === -1) {
       return false;
     }

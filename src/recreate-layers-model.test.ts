@@ -1,7 +1,13 @@
 import { describe, it, expect } from "vitest";
 
-import { memory, ones, Tensor, tensor1d, tensor2d, tidy } from "@tensorflow/tfjs-core";
-import { LayersModel, input, layers, model, SymbolicTensor } from "@tensorflow/tfjs-layers";
+import { memory, ones, Tensor, tidy } from "@tensorflow/tfjs-core";
+import {
+  LayersModel,
+  input,
+  layers,
+  model,
+  SymbolicTensor,
+} from "@tensorflow/tfjs-layers";
 import "@tensorflow/tfjs-node";
 
 import { recreateLayersModel } from "./recreate-layers-model";
@@ -55,10 +61,14 @@ describe("Recreate layers model", () => {
         recreatedModel.inputs.map(({ shape }) =>
           ones(shape.map((s) => s ?? 1)),
         ),
-      )
+      );
 
-      const originalPrediction = (originalModel.predict(mockInput) as Tensor).arraySync();
-      const recreatedPrediction = (recreatedModel.predict(mockInput) as Tensor).arraySync();
+      const originalPrediction = (
+        originalModel.predict(mockInput) as Tensor
+      ).arraySync();
+      const recreatedPrediction = (
+        recreatedModel.predict(mockInput) as Tensor
+      ).arraySync();
 
       expect(recreatedPrediction).toStrictEqual(originalPrediction);
     });
@@ -98,11 +108,13 @@ describe("Recreate layers model", () => {
         "
       `);
 
-      expect(recreatedModel.inputs.map(({ shape }) => shape)).toStrictEqual([[null, 2]]);
+      expect(recreatedModel.inputs.map(({ shape }) => shape)).toStrictEqual([
+        [null, 2],
+      ]);
 
       const mockInput = recreatedModel.inputs.map(({ shape }) =>
-          ones(shape.map((s) => s ?? 1)),
-        );
+        ones(shape.map((s) => s ?? 1)),
+      );
 
       (recreatedModel.predict(mockInput) as Tensor).arraySync();
     });
@@ -142,11 +154,13 @@ describe("Recreate layers model", () => {
         "
       `);
 
-      expect(recreatedModel.outputs.map(({ shape }) => shape)).toStrictEqual([[null, 2]]);
+      expect(recreatedModel.outputs.map(({ shape }) => shape)).toStrictEqual([
+        [null, 2],
+      ]);
 
       const mockInput = recreatedModel.inputs.map(({ shape }) =>
-          ones(shape.map((s) => s ?? 1)),
-        );
+        ones(shape.map((s) => s ?? 1)),
+      );
 
       (recreatedModel.predict(mockInput) as Tensor).arraySync();
     });
@@ -179,5 +193,5 @@ describe("Recreate layers model", () => {
     originalModel.dispose();
 
     expect(memory().numTensors).toBe(initialNumTensors);
-  })
+  });
 });

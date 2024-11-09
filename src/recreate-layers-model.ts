@@ -1,5 +1,10 @@
 import { serialization } from "@tensorflow/tfjs-core";
-import { LayersModel, layers, model, Sequential } from "@tensorflow/tfjs-layers";
+import {
+  LayersModel,
+  layers,
+  model,
+  Sequential,
+} from "@tensorflow/tfjs-layers";
 import { LayerRecreationData } from "./types";
 import retrieveRecreatedSymbolicTensor from "./retrieve-recreated-symbolic-tensor";
 import shouldResetWeightsBecauseOfInput from "./need-reset-weights-due-to-input";
@@ -30,14 +35,24 @@ export interface Config {
  * @param config The {@link Config} for the recreated model to differ from the original model
  * @returns A {@link LayersModel}
  */
-export function recreateLayersModel(originalModel: LayersModel, { newInputShapes, newOutputFiltersOrUnits }: Config) {
+export function recreateLayersModel(
+  originalModel: LayersModel,
+  { newInputShapes, newOutputFiltersOrUnits }: Config,
+) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
-    throw new Error("Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues");
+    throw new Error(
+      "Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues",
+    );
   }
 
-  if (newInputShapes && newInputShapes.length !== originalModel.inputLayers.length) {
-    throw new Error("`newInputShapes` must have the same length as `originalModel.inputLayers`. Set the value to null for inputs that should remain unchanged")
+  if (
+    newInputShapes &&
+    newInputShapes.length !== originalModel.inputLayers.length
+  ) {
+    throw new Error(
+      "`newInputShapes` must have the same length as `originalModel.inputLayers`. Set the value to null for inputs that should remain unchanged",
+    );
   }
 
   const layerRecreationData: LayerRecreationData[] = [];
@@ -74,10 +89,15 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
 
     if (newOutputFiltersOrUnits) {
       const indexInOutput = originalModel.outputLayers.indexOf(originalLayer);
-      
-      if (indexInOutput !== -1 && newOutputFiltersOrUnits[indexInOutput] !== null) {
+
+      if (
+        indexInOutput !== -1 &&
+        newOutputFiltersOrUnits[indexInOutput] !== null
+      ) {
         if (!("units" in config) && !("filters" in config)) {
-          throw new Error(`Cannot update output shape of ${originalLayer.name}: no field 'units' nor 'filters' found in the layers config`);
+          throw new Error(
+            `Cannot update output shape of ${originalLayer.name}: no field 'units' nor 'filters' found in the layers config`,
+          );
         }
 
         if ("units" in config) {
@@ -102,19 +122,34 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
       originalInboundNode.callArgs,
     );
 
-    if (!shouldResetWeightsBecauseOfOuput && !shouldResetWeightsBecauseOfInput(newInputShapes, originalModel, originalLayer)) {
+    if (
+      !shouldResetWeightsBecauseOfOuput &&
+      !shouldResetWeightsBecauseOfInput(
+        newInputShapes,
+        originalModel,
+        originalLayer,
+      )
+    ) {
       recreatedLayer.setWeights(originalLayer.getWeights());
     }
 
     layerRecreationData.push({
       originalLayer,
       recreatedLayer,
-      requiresWeightsReset: JSON.stringify(recreatedLayer.outputShape) !== JSON.stringify(originalLayer.outputShape),
+      requiresWeightsReset:
+        JSON.stringify(recreatedLayer.outputShape) !==
+        JSON.stringify(originalLayer.outputShape),
     });
   }
 
   return model({
-    inputs: retrieveRecreatedSymbolicTensor(layerRecreationData, originalModel.inputs),
-    outputs: retrieveRecreatedSymbolicTensor(layerRecreationData, originalModel.outputs),
+    inputs: retrieveRecreatedSymbolicTensor(
+      layerRecreationData,
+      originalModel.inputs,
+    ),
+    outputs: retrieveRecreatedSymbolicTensor(
+      layerRecreationData,
+      originalModel.outputs,
+    ),
   });
 }
