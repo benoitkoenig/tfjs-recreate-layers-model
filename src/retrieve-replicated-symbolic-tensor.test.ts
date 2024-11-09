@@ -4,7 +4,7 @@ import { layers } from "@tensorflow/tfjs-layers";
 import "@tensorflow/tfjs-node";
 
 import type { LayerRecreationData } from "./types";
-import retrieveRecreatedSymbolicTensor from "./retrieve-recreated-symbolic-tensor";
+import retrieveReplicatedSymbolicTensor from "./retrieve-replicated-symbolic-tensor";
 
 class SplitLayer extends layers.Layer {
   static className = "SplitLayer";
@@ -43,31 +43,31 @@ class SplitLayer extends layers.Layer {
 
 serialization.registerClass(SplitLayer);
 
-describe("Retrieve recreated symbolic tensor", () => {
-  it("should return the recreated tensor corresponding to an original tensor", () => {
+describe("Retrieve replicated symbolic tensor", () => {
+  it("should return the replicated tensor corresponding to an original tensor", () => {
     tidy(() => {
       const originalLayer = layers.inputLayer({
         inputShape: [3],
       });
 
-      const recreatedLayer = layers.inputLayer({
+      const replicatedLayer = layers.inputLayer({
         inputShape: [3],
       });
 
       const layersRecreationData: LayerRecreationData[] = [
         {
           originalLayer,
-          recreatedLayer,
+          replicatedLayer,
           requiresWeightsReset: true,
         },
       ];
 
       expect(
-        retrieveRecreatedSymbolicTensor(
+        retrieveReplicatedSymbolicTensor(
           layersRecreationData,
           originalLayer.output,
         ),
-      ).toStrictEqual(recreatedLayer.output);
+      ).toStrictEqual(replicatedLayer.output);
     });
   });
 
@@ -77,7 +77,7 @@ describe("Retrieve recreated symbolic tensor", () => {
         inputShape: [4],
       });
 
-      const recreatedInputLayer = layers.inputLayer({
+      const replicatedInputLayer = layers.inputLayer({
         inputShape: [4],
       });
 
@@ -85,27 +85,27 @@ describe("Retrieve recreated symbolic tensor", () => {
         sizes: [2, 2],
       });
 
-      const recreatedLayer = new SplitLayer({
+      const replicatedLayer = new SplitLayer({
         sizes: [2, 2],
       });
 
       originalLayer.apply(originalInputLayer.output);
-      recreatedLayer.apply(recreatedInputLayer.output);
+      replicatedLayer.apply(replicatedInputLayer.output);
 
       const layersRecreationData: LayerRecreationData[] = [
         {
           originalLayer,
-          recreatedLayer,
+          replicatedLayer,
           requiresWeightsReset: false,
         },
       ];
 
       expect(
-        retrieveRecreatedSymbolicTensor(
+        retrieveReplicatedSymbolicTensor(
           layersRecreationData,
           originalLayer.output,
         ),
-      ).toStrictEqual(recreatedLayer.output);
+      ).toStrictEqual(replicatedLayer.output);
     });
   });
 });

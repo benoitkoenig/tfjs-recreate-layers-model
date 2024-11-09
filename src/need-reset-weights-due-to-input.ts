@@ -1,5 +1,5 @@
 import type { layers, LayersModel } from "@tensorflow/tfjs-layers";
-import type { Config } from "./recreate-layers-model";
+import type { Config } from "./replicate-layers-model";
 
 export default function shouldResetWeightsBecauseOfInput(
   newInputShapes: Config["newInputShapes"],

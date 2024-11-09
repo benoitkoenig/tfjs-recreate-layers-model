@@ -10,7 +10,7 @@ import {
 } from "@tensorflow/tfjs-layers";
 import "@tensorflow/tfjs-node";
 
-import { recreateLayersModel } from "./recreate-layers-model";
+import { replicateLayersModel } from "./replicate-layers-model";
 
 function getModelSummary(model: LayersModel) {
   let summary = "";
@@ -24,8 +24,8 @@ function getModelSummary(model: LayersModel) {
   return summary;
 }
 
-describe("Recreate layers model", () => {
-  it("should recreate a model made of a single dense layer", () => {
+describe("Replicate layers model", () => {
+  it("should replicate a model made of a single dense layer", () => {
     tidy(() => {
       const inputLayer = input({
         shape: [3],
@@ -40,9 +40,9 @@ describe("Recreate layers model", () => {
         outputs: output,
       });
 
-      const recreatedModel = recreateLayersModel(originalModel, {});
+      const replicatedModel = replicateLayersModel(originalModel, {});
 
-      expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
+      expect(getModelSummary(replicatedModel)).toMatchInlineSnapshot(`
         "__________________________________________________________________________________________
         Layer (type)                Input Shape               Output shape              Param #   
         ==========================================================================================
@@ -57,8 +57,8 @@ describe("Recreate layers model", () => {
         "
       `);
 
-      const mockInput = recreatedModel.predict(
-        recreatedModel.inputs.map(({ shape }) =>
+      const mockInput = replicatedModel.predict(
+        replicatedModel.inputs.map(({ shape }) =>
           ones(shape.map((s) => s ?? 1)),
         ),
       );
@@ -66,15 +66,15 @@ describe("Recreate layers model", () => {
       const originalPrediction = (
         originalModel.predict(mockInput) as Tensor
       ).arraySync();
-      const recreatedPrediction = (
-        recreatedModel.predict(mockInput) as Tensor
+      const replicatedPrediction = (
+        replicatedModel.predict(mockInput) as Tensor
       ).arraySync();
 
-      expect(recreatedPrediction).toStrictEqual(originalPrediction);
+      expect(replicatedPrediction).toStrictEqual(originalPrediction);
     });
   });
 
-  it("should recreate a model and update its input", () => {
+  it("should replicate a model and update its input", () => {
     tidy(() => {
       const inputLayer = input({
         shape: [3],
@@ -89,11 +89,11 @@ describe("Recreate layers model", () => {
         outputs: output,
       });
 
-      const recreatedModel = recreateLayersModel(originalModel, {
+      const replicatedModel = replicateLayersModel(originalModel, {
         newInputShapes: [[2]],
       });
 
-      expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
+      expect(getModelSummary(replicatedModel)).toMatchInlineSnapshot(`
         "__________________________________________________________________________________________
         Layer (type)                Input Shape               Output shape              Param #   
         ==========================================================================================
@@ -108,19 +108,19 @@ describe("Recreate layers model", () => {
         "
       `);
 
-      expect(recreatedModel.inputs.map(({ shape }) => shape)).toStrictEqual([
+      expect(replicatedModel.inputs.map(({ shape }) => shape)).toStrictEqual([
         [null, 2],
       ]);
 
-      const mockInput = recreatedModel.inputs.map(({ shape }) =>
+      const mockInput = replicatedModel.inputs.map(({ shape }) =>
         ones(shape.map((s) => s ?? 1)),
       );
 
-      (recreatedModel.predict(mockInput) as Tensor).arraySync();
+      (replicatedModel.predict(mockInput) as Tensor).arraySync();
     });
   });
 
-  it("should recreate a model and update its output", () => {
+  it("should replicate a model and update its output", () => {
     tidy(() => {
       const inputLayer = input({
         shape: [3],
@@ -135,11 +135,11 @@ describe("Recreate layers model", () => {
         outputs: output,
       });
 
-      const recreatedModel = recreateLayersModel(originalModel, {
+      const replicatedModel = replicateLayersModel(originalModel, {
         newOutputFiltersOrUnits: [2],
       });
 
-      expect(getModelSummary(recreatedModel)).toMatchInlineSnapshot(`
+      expect(getModelSummary(replicatedModel)).toMatchInlineSnapshot(`
         "__________________________________________________________________________________________
         Layer (type)                Input Shape               Output shape              Param #   
         ==========================================================================================
@@ -154,15 +154,15 @@ describe("Recreate layers model", () => {
         "
       `);
 
-      expect(recreatedModel.outputs.map(({ shape }) => shape)).toStrictEqual([
+      expect(replicatedModel.outputs.map(({ shape }) => shape)).toStrictEqual([
         [null, 2],
       ]);
 
-      const mockInput = recreatedModel.inputs.map(({ shape }) =>
+      const mockInput = replicatedModel.inputs.map(({ shape }) =>
         ones(shape.map((s) => s ?? 1)),
       );
 
-      (recreatedModel.predict(mockInput) as Tensor).arraySync();
+      (replicatedModel.predict(mockInput) as Tensor).arraySync();
     });
   });
 
@@ -184,9 +184,9 @@ describe("Recreate layers model", () => {
 
     const numTensorsWithOriginalModel = memory().numTensors;
 
-    const recreatedModel = recreateLayersModel(originalModel, {});
+    const replicatedModel = replicateLayersModel(originalModel, {});
 
-    recreatedModel.dispose();
+    replicatedModel.dispose();
 
     expect(memory().numTensors).toBe(numTensorsWithOriginalModel);
 

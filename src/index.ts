@@ -1,1 +1,1 @@
-export { recreateLayersModel } from "./recreate-layers-model";
+export { replicateLayersModel } from "./replicate-layers-model";

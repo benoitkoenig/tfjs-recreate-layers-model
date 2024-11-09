@@ -6,7 +6,7 @@ import {
   Sequential,
 } from "@tensorflow/tfjs-layers";
 import { LayerRecreationData } from "./types";
-import retrieveRecreatedSymbolicTensor from "./retrieve-recreated-symbolic-tensor";
+import retrieveReplicatedSymbolicTensor from "./retrieve-replicated-symbolic-tensor";
 import shouldResetWeightsBecauseOfInput from "./need-reset-weights-due-to-input";
 
 export interface Config {
@@ -28,21 +28,21 @@ export interface Config {
 
 /**
  * Creates a new {@link LayersModel} that replicates {@link originalModel}. It is possible to change the input/output shape through the configuration parameter.
- * The recreated {@link LayersModel} has the same weight as the {@link originalModel}, except fo layers that either:
+ * The replicated {@link LayersModel} has the same weight as the {@link originalModel}, except fo layers that either:
  *   - Is directly applied to an input which shape changed
  *   - Is directly applied to a layer which output shape changed
  * @param originalModel The {@link LayersModel} to replicate
- * @param config The {@link Config} for the recreated model to differ from the original model
+ * @param config The {@link Config} for the replicated model to differ from the original model
  * @returns A {@link LayersModel}
  */
-export function recreateLayersModel(
+export function replicateLayersModel(
   originalModel: LayersModel,
   { newInputShapes, newOutputFiltersOrUnits }: Config,
 ) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
     throw new Error(
-      "Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-recreate-layers-model/issues",
+      "Sequential models are not yet supported. If you need this, feel free to open an issue on https://github.com/benoitkoenig/tfjs-replicate-layers-model/issues",
     );
   }
 
@@ -71,7 +71,7 @@ export function recreateLayersModel(
 
       layersRecreationData.push({
         originalLayer,
-        recreatedLayer: layers.inputLayer(config),
+        replicatedLayer: layers.inputLayer(config),
         requiresWeightsReset: Boolean(newInputShapes?.[index]),
       });
 
@@ -113,13 +113,13 @@ export function recreateLayersModel(
       }
     }
 
-    const recreatedLayer =
+    const replicatedLayer =
       new (serialization.SerializationMap.getMap().classNameMap[
         originalLayer.getClassName()
       ][0])(config) as layers.Layer;
 
-    recreatedLayer.apply(
-      retrieveRecreatedSymbolicTensor(
+    replicatedLayer.apply(
+      retrieveReplicatedSymbolicTensor(
         layersRecreationData,
         originalLayer.input,
       ),
@@ -134,24 +134,24 @@ export function recreateLayersModel(
         originalLayer,
       )
     ) {
-      recreatedLayer.setWeights(originalLayer.getWeights());
+      replicatedLayer.setWeights(originalLayer.getWeights());
     }
 
     layersRecreationData.push({
       originalLayer,
-      recreatedLayer,
+      replicatedLayer,
       requiresWeightsReset:
-        JSON.stringify(recreatedLayer.outputShape) !==
+        JSON.stringify(replicatedLayer.outputShape) !==
         JSON.stringify(originalLayer.outputShape),
     });
   }
 
   return model({
-    inputs: retrieveRecreatedSymbolicTensor(
+    inputs: retrieveReplicatedSymbolicTensor(
       layersRecreationData,
       originalModel.inputs,
     ),
-    outputs: retrieveRecreatedSymbolicTensor(
+    outputs: retrieveReplicatedSymbolicTensor(
       layersRecreationData,
       originalModel.outputs,
     ),
