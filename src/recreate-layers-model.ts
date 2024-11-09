@@ -89,12 +89,12 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
 
   for (const originalLayer of originalModel.layers) {
     if (originalModel.inputLayers.includes(originalLayer)) {
-      let config = originalLayer.getConfig();
+      const config = { ...originalLayer.getConfig() };
 
       const index = originalModel.inputLayers.indexOf(originalLayer);
 
       if (newInputShapes?.[index]) {
-        config = { ...config, batchInputShape: newInputShapes[index] };
+        config["batchInputShape"] = newInputShapes[index];
       }
 
       layerRecreationData.push({
@@ -114,7 +114,7 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
 
     const originalInboundNode = originalLayer.inboundNodes[0];
 
-    let config = originalLayer.getConfig();
+    const config = { ...originalLayer.getConfig() };
     let shouldResetWeightsBecauseOfOuput = false;
 
     if (newOutputFiltersOrUnits) {
@@ -126,11 +126,11 @@ export function recreateLayersModel(originalModel: LayersModel, { newInputShapes
         }
 
         if ("units" in config) {
-          config = { ...config, units: newOutputFiltersOrUnits[indexInOutput]!};
+          config["units"] = newOutputFiltersOrUnits[indexInOutput]!;
         }
 
         if ("filters" in config) {
-          config = { ...config, filters: newOutputFiltersOrUnits[indexInOutput]!};
+          config["filters"] = newOutputFiltersOrUnits[indexInOutput]!;
         }
 
         shouldResetWeightsBecauseOfOuput = true;
