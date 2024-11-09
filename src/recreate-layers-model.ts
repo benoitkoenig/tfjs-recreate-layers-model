@@ -55,7 +55,7 @@ export function recreateLayersModel(
     );
   }
 
-  const layerRecreationData: LayerRecreationData[] = [];
+  const layersRecreationData: LayerRecreationData[] = [];
 
   for (const originalLayer of originalModel.layers) {
     const config = { ...originalLayer.getConfig() };
@@ -68,7 +68,7 @@ export function recreateLayersModel(
         config["batchInputShape"] = newInputShapes[index];
       }
 
-      layerRecreationData.push({
+      layersRecreationData.push({
         originalLayer,
         recreatedLayer: layers.inputLayer(config),
         requiresWeightsReset: Boolean(newInputShapes?.[index]),
@@ -118,7 +118,10 @@ export function recreateLayersModel(
       ][0])(config) as layers.Layer;
 
     recreatedLayer.apply(
-      retrieveRecreatedSymbolicTensor(layerRecreationData, originalLayer.input),
+      retrieveRecreatedSymbolicTensor(
+        layersRecreationData,
+        originalLayer.input,
+      ),
       originalInboundNode.callArgs,
     );
 
@@ -133,7 +136,7 @@ export function recreateLayersModel(
       recreatedLayer.setWeights(originalLayer.getWeights());
     }
 
-    layerRecreationData.push({
+    layersRecreationData.push({
       originalLayer,
       recreatedLayer,
       requiresWeightsReset:
@@ -144,11 +147,11 @@ export function recreateLayersModel(
 
   return model({
     inputs: retrieveRecreatedSymbolicTensor(
-      layerRecreationData,
+      layersRecreationData,
       originalModel.inputs,
     ),
     outputs: retrieveRecreatedSymbolicTensor(
-      layerRecreationData,
+      layersRecreationData,
       originalModel.outputs,
     ),
   });

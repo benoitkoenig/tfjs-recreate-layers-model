@@ -2,16 +2,16 @@ import type { SymbolicTensor } from "@tensorflow/tfjs-layers";
 import type { LayerRecreationData } from "./types";
 
 export default function retrieveRecreatedSymbolicTensor(
-  layerRecreationData: LayerRecreationData[],
+  layersRecreationData: LayerRecreationData[],
   originalSymbolicTensor: SymbolicTensor | SymbolicTensor[],
 ): SymbolicTensor | SymbolicTensor[] {
   if (Array.isArray(originalSymbolicTensor)) {
     return originalSymbolicTensor.map((t) =>
-      retrieveRecreatedSymbolicTensor(layerRecreationData, t),
+      retrieveRecreatedSymbolicTensor(layersRecreationData, t),
     ) as SymbolicTensor[];
   }
 
-  const { recreatedLayer } = layerRecreationData.find(
+  const { recreatedLayer } = layersRecreationData.find(
     ({ originalLayer }) => originalLayer === originalSymbolicTensor.sourceLayer,
   )!;
 
