@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { ones, Tensor, tensor1d, tensor2d, tidy } from "@tensorflow/tfjs-core";
+import { memory, ones, Tensor, tensor1d, tensor2d, tidy } from "@tensorflow/tfjs-core";
 import { LayersModel, input, layers, model, SymbolicTensor } from "@tensorflow/tfjs-layers";
 import "@tensorflow/tfjs-node";
 
@@ -163,4 +163,33 @@ describe("Recreate layers model", () => {
       (recreatedModel.predict(mockInput) as Tensor).arraySync();
     });
   });
+
+  it("should dispose all superfluous tensors", () => {
+    const initialNumTensors = memory().numTensors;
+
+    const inputLayer = input({
+      shape: [3],
+    });
+
+    const output = layers
+      .dense({ units: 3 })
+      .apply(inputLayer) as SymbolicTensor;
+
+    const originalModel = model({
+      inputs: inputLayer,
+      outputs: output,
+    });
+
+    const numTensorsWithOriginalModel = memory().numTensors;
+
+    const recreatedModel = recreateLayersModel(originalModel, {});
+
+    recreatedModel.dispose();
+
+    expect(memory().numTensors).toBe(numTensorsWithOriginalModel);
+
+    originalModel.dispose();
+
+    expect(memory().numTensors).toBe(initialNumTensors);
+  })
 });
