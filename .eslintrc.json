@@ -19,7 +19,6 @@
   "ignorePatterns": ["**/dist"],
   "rules": {
     "@typescript-eslint/no-unused-vars": ["error", {
-      "varsIgnorePattern": "assertType",
       "argsIgnorePattern": "^_",
       "destructuredArrayIgnorePattern": "^_",
       "ignoreRestSiblings": true
