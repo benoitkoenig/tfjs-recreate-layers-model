@@ -25,6 +25,7 @@ export interface Config {
    * Note that if you set this value to the value in the original model, the output shape will remain unchanged but that will still reset the layer's weights.
    */
   newOutputFiltersOrUnits?: Shape | undefined;
+  verbose?: boolean | undefined;
 }
 
 /**
@@ -38,7 +39,7 @@ export interface Config {
  */
 export function replicateLayersModel(
   originalModel: LayersModel,
-  { newInputShapes, newOutputFiltersOrUnits }: Config,
+  { newInputShapes, newOutputFiltersOrUnits, verbose }: Config,
 ) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
@@ -57,6 +58,7 @@ export function replicateLayersModel(
   }
 
   const layersRecreationData: LayerRecreationData[] = [];
+  const inputsWithResetWeights: string[] = [];
 
   for (const originalLayer of originalModel.layers) {
     const config = { ...originalLayer.getConfig() };
@@ -136,6 +138,8 @@ export function replicateLayersModel(
       )
     ) {
       replicatedLayer.setWeights(originalLayer.getWeights());
+    } else if (verbose) {
+      inputsWithResetWeights.push(originalLayer.name);
     }
 
     layersRecreationData.push({
@@ -145,6 +149,12 @@ export function replicateLayersModel(
         JSON.stringify(replicatedLayer.outputShape) !==
         JSON.stringify(originalLayer.outputShape),
     });
+  }
+
+  if (verbose) {
+    console.log(
+      `The weights of layers ${inputsWithResetWeights.join(", ")} in model ${originalModel.name} are reset`,
+    );
   }
 
   return model({
