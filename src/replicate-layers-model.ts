@@ -6,7 +6,7 @@ import {
   Sequential,
   Shape,
 } from "@tensorflow/tfjs-layers";
-import { LayerRecreationData } from "./types";
+import type { LayerRecreationData } from "./types";
 import retrieveReplicatedSymbolicTensor from "./retrieve-replicated-symbolic-tensor";
 import shouldResetWeightsBecauseOfInput from "./need-reset-weights-due-to-input";
 
@@ -25,6 +25,10 @@ export interface Config {
    * Note that if you set this value to the value in the original model, the output shape will remain unchanged but that will still reset the layer's weights.
    */
   newOutputFiltersOrUnits?: Shape | undefined;
+  /**
+   * If set to true, preserved weights remain trainable. Otherwise, all weights that are not reset are no longer trainable.
+   */
+  preservedWeightsAreTrainable?: boolean;
   verbose?: boolean | undefined;
 }
 
@@ -39,7 +43,12 @@ export interface Config {
  */
 export function replicateLayersModel(
   originalModel: LayersModel,
-  { newInputShapes, newOutputFiltersOrUnits, verbose }: Config,
+  {
+    newInputShapes,
+    newOutputFiltersOrUnits,
+    preservedWeightsAreTrainable,
+    verbose,
+  }: Config,
 ) {
   if (originalModel instanceof Sequential) {
     // TODO: Add support for sequential models
@@ -138,8 +147,12 @@ export function replicateLayersModel(
       )
     ) {
       replicatedLayer.setWeights(originalLayer.getWeights());
-    } else if (verbose) {
+    } else {
       inputsWithResetWeights.push(originalLayer.name);
+
+      if (!preservedWeightsAreTrainable) {
+        replicatedLayer.trainable = false;
+      }
     }
 
     layersRecreationData.push({
