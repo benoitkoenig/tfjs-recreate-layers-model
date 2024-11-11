@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { memory, ones, Tensor, tidy } from "@tensorflow/tfjs-core";
+import { memory, ones, rand, Tensor, tidy } from "@tensorflow/tfjs-core";
 import {
   LayersModel,
   input,
@@ -193,5 +193,55 @@ describe("Replicate layers model", () => {
     originalModel.dispose();
 
     expect(memory().numTensors).toBe(initialNumTensors);
+  });
+
+  it("should preserve the intermediate weights", () => {
+    tidy(() => {
+      const inputLayer = input({
+        shape: [3],
+      });
+
+      let x = inputLayer;
+
+      for (let i = 0; i < 5; i++) {
+        x = layers
+          .dense({ units: 3, kernelInitializer: "HeNormal" })
+          .apply(x) as SymbolicTensor;
+      }
+
+      const originalModel = model({
+        inputs: inputLayer,
+        outputs: x,
+      });
+
+      originalModel.layers.forEach((layer) => {
+        layer.weights.forEach((w) =>
+          w.write(rand(w.shape as number[], Math.random)),
+        );
+      });
+
+      const replicatedModel = replicateLayersModel(originalModel, {
+        newInputShapes: [[3]],
+        newOutputFiltersOrUnits: [3],
+      });
+
+      for (let i = 1; i < 6; i++) {
+        const originalWeights = originalModel.layers[i].weights;
+        const replicatedWeights = replicatedModel.layers[i].weights;
+
+        expect(replicatedWeights).toHaveLength(originalWeights.length);
+
+        for (let j = 0; j < originalWeights.length; j++) {
+          const originalData = originalWeights[j].read().arraySync();
+          const replicatedData = replicatedWeights[j].read().arraySync();
+
+          if (i === 1 || i === 5) {
+            expect(replicatedData).not.toStrictEqual(originalData);
+          } else {
+            expect(replicatedData).toStrictEqual(originalData);
+          }
+        }
+      }
+    });
   });
 });
