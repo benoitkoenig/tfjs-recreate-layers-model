@@ -32,7 +32,7 @@ describe("Replicate layers model", () => {
       });
 
       const output = layers
-        .dense({ units: 3 })
+        .dense({ units: 3, kernelInitializer: "HeNormal" })
         .apply(inputLayer) as SymbolicTensor;
 
       const originalModel = model({
@@ -81,7 +81,7 @@ describe("Replicate layers model", () => {
       });
 
       const output = layers
-        .dense({ units: 3 })
+        .dense({ units: 3, kernelInitializer: "HeNormal" })
         .apply(inputLayer) as SymbolicTensor;
 
       const originalModel = model({
@@ -127,7 +127,7 @@ describe("Replicate layers model", () => {
       });
 
       const output = layers
-        .dense({ units: 3 })
+        .dense({ units: 3, kernelInitializer: "HeNormal" })
         .apply(inputLayer) as SymbolicTensor;
 
       const originalModel = model({
@@ -174,7 +174,7 @@ describe("Replicate layers model", () => {
     });
 
     const output = layers
-      .dense({ units: 3 })
+      .dense({ units: 3, kernelInitializer: "HeNormal" })
       .apply(inputLayer) as SymbolicTensor;
 
     const originalModel = model({
