@@ -2,7 +2,7 @@
 
 `tfjs-replicate-layers-model` allows you to replicate an existing LayersModel. It offers options to change the model's input or output shape.
 
-If input/output shape are updated, the weights of connected layers are reset. Intermediate weights are always retained.
+If input/output shape are updated, the weights of connected layers are reset. Intermediate weights are always preserved.
 
 ## Usage
 
@@ -36,7 +36,7 @@ model.dispose();
 
 // `replicatedModel` takes a tensor of shape [n, 2] and outputs a tensor of shape [n, 5].
 // The weights of the first and last layers are reset, but the weights of the
-// intermediate layers are retained, so training from there goes faster than re-starting from scratch.
+// intermediate layers are preserved, so training from there goes faster than re-starting from scratch.
 ```
 
 ## Options
